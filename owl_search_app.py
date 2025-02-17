@@ -33,7 +33,10 @@ class OWLSearchApp:
         search_button_frame = tk.Frame(root)
         search_button_frame.pack(pady=10)
 
-        self.btn_search1 = tk.Button(search_button_frame, text="ดอกไม้, ต้นไม้", command=lambda: self.search_owl('flower_tree'))
+        self.btn_search0 = tk.Button(search_button_frame, text="ต้นไม้", command=lambda: self.search_owl('tree'))
+        self.btn_search0.pack(side="left", padx=5)
+    
+        self.btn_search1 = tk.Button(search_button_frame, text="ดอกไม้", command=lambda: self.search_owl('flower'))
         self.btn_search1.pack(side="left", padx=5)
 
         self.btn_search2 = tk.Button(search_button_frame, text="ชื่อท้องถิ่น", command=lambda: self.search_owl('trad_name'))
@@ -41,6 +44,9 @@ class OWLSearchApp:
 
         self.btn_search3 = tk.Button(search_button_frame, text="พิกัด", command=lambda: self.search_owl('coordinate'))
         self.btn_search3.pack(side="left", padx=5)
+
+        self.btn_search4 = tk.Button(search_button_frame, text="คำขวัญ", command=lambda: self.search_owl('motto'))
+        self.btn_search4.pack(side="left", padx=5)
 
         # กล่องข้อความแสดงผล
         self.text_result = tk.Text(root, height=10, width=80)
@@ -71,22 +77,36 @@ class OWLSearchApp:
         # เพิ่ม Prefix
         prefix = "PREFIX tourism: <http://www.my_ontology.edu/mytourism#>"
 
-        if search_type == 'flower_tree':
+        if search_type == 'flower':
             sparql_query = f"""
             {prefix}
-            SELECT ?name ?tree ?flower WHERE {{
+            SELECT ?name ?flower WHERE {{
                 ?a 
                 tourism:hasNameOfProvince ?name .
-                OPTIONAL {{ ?a tourism:hasTree ?tree . }}
                 OPTIONAL {{ ?a tourism:hasFlower ?flower . }}
 
                 FILTER (langMatches(lang(?name), "{self.language}"))
-                FILTER (!bound(?tree) || langMatches(lang(?tree), "{self.language}"))
                 FILTER (!bound(?flower) || langMatches(lang(?flower), "{self.language}"))
 
                 FILTER (regex(str(?name), "{query_str}", "i"))
             }}
             """
+
+        elif search_type == 'tree':
+            sparql_query = f"""
+            {prefix}
+            SELECT ?name ?tree WHERE {{
+                ?a 
+                tourism:hasNameOfProvince ?name .
+                OPTIONAL {{ ?a tourism:hasTree ?tree . }}
+
+                FILTER (langMatches(lang(?name), "{self.language}"))
+                FILTER (!bound(?tree) || langMatches(lang(?tree), "{self.language}"))
+
+                FILTER (regex(str(?name), "{query_str}", "i"))
+            }}
+            """
+
         elif search_type == 'trad_name':
             sparql_query = f"""
             {prefix}
@@ -114,17 +134,35 @@ class OWLSearchApp:
                 FILTER (regex(str(?name), "{query_str}", "i"))
             }}
             """
+        elif search_type == 'motto':
+            sparql_query = f"""
+            {prefix}
+            SELECT ?name ?motto WHERE {{
+                ?a 
+                tourism:hasNameOfProvince ?name;
+                tourism:hasMotto ?motto;
+
+                FILTER (langMatches(lang(?name), "{self.language}"))
+                FILTER (langMatches(lang(?motto), "{self.language}"))
+
+                FILTER (regex(str(?name), "{query_str}", "i"))
+            }}
+            """
 
         results = self.graph.query(sparql_query)
 
         self.text_result.delete("1.0", tk.END)  # เคลียร์ผลลัพธ์เก่า
         for row in results:
-            if search_type == 'flower_tree':
-                self.text_result.insert(tk.END, f"จังหวัด: {row.name}, ต้นไม้: {row.tree}, ดอกไม้: {row.flower}\n")
+            if search_type == 'tree':
+                self.text_result.insert(tk.END, f"จังหวัด: {row.name}, ต้นไม้: {row.tree}\n")
+            elif search_type == 'flower':
+                self.text_result.insert(tk.END, f"จังหวัด: {row.name}, ดอกไม้: {row.flower}\n")
             elif search_type == 'trad_name':
                 self.text_result.insert(tk.END, f"จังหวัด: {row.name}, ชื่อท้องถิ่น: {row.tradname}\n")
             elif search_type == 'coordinate':
-                self.text_result.insert(tk.END, f"จังหวด: {row.name}, ละติจูด: {row.latitude}, ลองจิจูด: {row.longitude}\n")
+                self.text_result.insert(tk.END, f"จังหวัด: {row.name} \nละติจูด: {row.latitude}, ลองจิจูด: {row.longitude}")
+            elif search_type == 'motto':
+                self.text_result.insert(tk.END, f"จังหวัด: {row.name} \nคำขวัญ: {row.motto}")
                 
 
 if __name__ == "__main__":
