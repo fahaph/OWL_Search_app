@@ -120,11 +120,11 @@ class OWLSearchApp:
         self.text_result.delete("1.0", tk.END)  # เคลียร์ผลลัพธ์เก่า
         for row in results:
             if search_type == 'flower_tree':
-                    self.text_result.insert(tk.END, f"จังหวัด: {row.name}, ต้นไม้: {row.tree}, ดอกไม้: {row.flower}\n")
+                self.text_result.insert(tk.END, f"จังหวัด: {row.name}, ต้นไม้: {row.tree}, ดอกไม้: {row.flower}\n")
             elif search_type == 'trad_name':
-                    self.text_result.insert(tk.END, f"จังหวัด: {row.name}, ชื่อท้องถิ่น: {row.tradname}\n")
+                self.text_result.insert(tk.END, f"จังหวัด: {row.name}, ชื่อท้องถิ่น: {row.tradname}\n")
             elif search_type == 'coordinate':
-                    self.text_result.insert(tk.END, f"จังหวด: {row.name}, ละติจูด: {row.latitude}, ลองจิจูด: {row.longitude}\n")
+                self.text_result.insert(tk.END, f"จังหวด: {row.name}, ละติจูด: {row.latitude}, ลองจิจูด: {row.longitude}\n")
                 
 
 if __name__ == "__main__":
